@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NeuroSent — Cyber Threat Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@200;400;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #020c14;
+    --bg2: #061624;
+    --bg3: #0a2035;
+    --cyan: #00e5ff;
+    --cyan2: #00bcd4;
+    --red: #ff1744;
+    --orange: #ff6d00;
+    --green: #00e676;
+    --yellow: #ffd600;
+    --text: #c8e6f0;
+    --muted: #4a7a94;
+    --border: rgba(0,229,255,0.15);
+    --border2: rgba(0,229,255,0.3);
+    --glow: 0 0 20px rgba(0,229,255,0.3);
+    --glow-red: 0 0 20px rgba(255,23,68,0.4);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content:'';
+    position:fixed;
+    inset:0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,229,255,0.012) 2px, rgba(0,229,255,0.012) 4px);
+    pointer-events:none;
+    z-index:9999;
+  }
+
+  /* Grid bg */
+  body::after {
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  /* ===== TOP NAV ===== */
+  nav {
+    position:relative;
+    z-index:10;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 12px 28px;
+    border-bottom: 1px solid var(--border2);
+    background: rgba(2,12,20,0.95);
+    backdrop-filter: blur(10px);
+  }
+  .logo {
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .logo-icon {
+    width:36px; height:36px;
+    border:1.5px solid var(--cyan);
+    border-radius:6px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow: var(--glow);
+    position:relative;
+    overflow:hidden;
+  }
+  .logo-icon::before {
+    content:'';
+    position:absolute;
+    inset:-50%;
+    background: conic-gradient(from 0deg, transparent 270deg, var(--cyan) 360deg);
+    animation: spin 3s linear infinite;
+  }
+  .logo-icon::after {
+    content:'S';
+    position:absolute;
+    font-family:'Share Tech Mono';
+    font-size:16px;
+    color:var(--cyan);
+    text-shadow: var(--glow);
+  }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .logo-text { font-family:'Rajdhani'; font-weight:700; font-size:20px; letter-spacing:4px; color:var(--cyan); text-shadow: var(--glow); }
+  .logo-sub { font-size:9px; color:var(--muted); letter-spacing:3px; font-family:'Share Tech Mono'; }
+
+  .nav-right { display:flex; align-items:center; gap:20px; }
+  .nav-status {
+    display:flex; align-items:center; gap:6px;
+    font-family:'Share Tech Mono'; font-size:11px; color:var(--green);
+  }
+  .pulse-dot {
+    width:7px; height:7px; border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 8px var(--green);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+  .nav-time { font-family:'Share Tech Mono'; font-size:12px; color:var(--muted); }
+  .threat-level {
+    padding:4px 12px;
+    border:1px solid var(--orange);
+    border-radius:2px;
+    font-size:11px;
+    font-family:'Share Tech Mono';
+    color:var(--orange);
+    letter-spacing:2px;
+    box-shadow:0 0 12px rgba(255,109,0,0.2);
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  main {
+    position:relative;
+    z-index:1;
+    display:grid;
+    grid-template-columns: 260px 1fr 300px;
+    grid-template-rows: auto 1fr auto;
+    height: calc(100vh - 62px);
+    gap:0;
+  }
+
+  /* ===== SIDEBAR LEFT ===== */
+  .sidebar-left {
+    border-right:1px solid var(--border);
+    padding:20px 16px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+  }
+
+  .section-label {
+    font-family:'Share Tech Mono';
+    font-size:9px;
+    letter-spacing:3px;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-label::after {
+    content:'';
+    flex:1;
+    height:1px;
+    background:var(--border);
+  }
+
+  /* Stat cards */
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .stat-card {
+    background:var(--bg2);
+    border:1px solid var(--border);
+    border-radius:4px;
+    padding:12px 10px;
+    position:relative;
+    overflow:hidden;
+    transition: border-color 0.3s;
+  }
+  .stat-card:hover { border-color:var(--border2); }
+  .stat-card::before {
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0;
+    height:2px;
+  }
+  .stat-card.red::before { background:var(--red); box-shadow:0 0 10px var(--red); }
+  .stat-card.orange::before { background:var(--orange); box-shadow:0 0 10px var(--orange); }
+  .stat-card.cyan::before { background:var(--cyan); box-shadow:0 0 10px var(--cyan); }
+  .stat-card.green::before { background:var(--green); box-shadow:0 0 10px var(--green); }
+
+  .stat-val {
+    font-family:'Share Tech Mono';
+    font-size:22px;
+    line-height:1;
+    margin-bottom:4px;
+  }
+  .stat-card.red .stat-val { color:var(--red); text-shadow:0 0 10px var(--red); }
+  .stat-card.orange .stat-val { color:var(--orange); text-shadow:0 0 10px var(--orange); }
+  .stat-card.cyan .stat-val { color:var(--cyan); text-shadow:0 0 10px var(--cyan); }
+  .stat-card.green .stat-val { color:var(--green); text-shadow:0 0 10px var(--green); }
+  .stat-lbl { font-size:10px; color:var(--muted); letter-spacing:1px; }
+
+  /* Attack type bars */
+  .attack-list { display:flex; flex-direction:column; gap:8px; }
+  .attack-item { }
+  .attack-header { display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px; color:var(--text); }
+  .attack-pct { font-family:'Share Tech Mono'; font-size:11px; color:var(--cyan); }
+  .bar-track { height:4px; background:rgba(255,255,255,0.05); border-radius:2px; overflow:hidden; }
+  .bar-fill {
+    height:100%;
+    border-radius:2px;
+    position:relative;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+  }
+  .bar-fill.r { background:linear-gradient(90deg,#ff174488,var(--red)); box-shadow:0 0 8px var(--red); }
+  .bar-fill.o { background:linear-gradient(90deg,#ff6d0088,var(--orange)); }
+  .bar-fill.c { background:linear-gradient(90deg,#00e5ff44,var(--cyan)); }
+  .bar-fill.g { background:linear-gradient(90deg,#00e67644,var(--green)); }
+  .bar-fill.y { background:linear-gradient(90deg,#ffd60044,var(--yellow)); }
+
+  /* ===== CENTER: MAP + FEED ===== */
+  .center-panel {
+    display:flex;
+    flex-direction:column;
+    border-right:1px solid var(--border);
+    overflow:hidden;
+  }
+
+  /* World map area */
+  .map-area {
+    flex:1;
+    position:relative;
+    background: radial-gradient(ellipse at center, #061e33 0%, #020c14 80%);
+    overflow:hidden;
+    min-height:0;
+  }
+
+  /* SVG world map - simplified */
+  .map-svg {
+    width:100%; height:100%;
+    opacity:0.25;
+  }
+
+  /* Attack arc overlay */
+  .attack-arcs {
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+  }
+
+  /* Ping circles on map */
+  .map-ping {
+    position:absolute;
+    transform:translate(-50%,-50%);
+  }
+  .map-ping .ring {
+    position:absolute;
+    border-radius:50%;
+    border:1.5px solid;
+    top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    animation: ripple 2s ease-out infinite;
+  }
+  .map-ping .dot {
+    width:6px;height:6px;
+    border-radius:50%;
+    position:relative;
+    z-index:2;
+  }
+  .map-ping.red .ring { border-color:var(--red); }
+  .map-ping.red .dot { background:var(--red); box-shadow:0 0 8px var(--red); }
+  .map-ping.cyan .ring { border-color:var(--cyan); }
+  .map-ping.cyan .dot { background:var(--cyan); box-shadow:0 0 8px var(--cyan); }
+  .map-ping.orange .ring { border-color:var(--orange); }
+  .map-ping.orange .dot { background:var(--orange); box-shadow:0 0 8px var(--orange); }
+
+  @keyframes ripple {
+    0% { width:6px;height:6px;opacity:1; }
+    100% { width:36px;height:36px;opacity:0; }
+  }
+  .map-ping .ring:nth-child(2) { animation-delay:0.6s; }
+  .map-ping .ring:nth-child(3) { animation-delay:1.2s; }
+
+  /* Map label */
+  .map-label {
+    position:absolute;
+    font-family:'Share Tech Mono';
+    font-size:9px;
+    color:var(--muted);
+    pointer-events:none;
+    white-space:nowrap;
+  }
+
+  .map-overlay-text {
+    position:absolute;
+    top:16px; left:20px;
+    font-family:'Share Tech Mono';
+    font-size:10px;
+    color:var(--cyan);
+    letter-spacing:2px;
+    text-shadow:var(--glow);
+    opacity:0.7;
+  }
+
+  /* Threat feed */
+  .threat-feed {
+    height:240px;
+    border-top:1px solid var(--border);
+    overflow:hidden;
+    position:relative;
+  }
+  .feed-header {
+    padding:10px 16px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .feed-title {
+    font-family:'Share Tech Mono';
+    font-size:11px;
+    color:var(--cyan);
+    letter-spacing:2px;
+  }
+  .feed-badge {
+    background:rgba(255,23,68,0.15);
+    border:1px solid var(--red);
+    border-radius:2px;
+    padding:2px 8px;
+    font-size:10px;
+    font-family:'Share Tech Mono';
+    color:var(--red);
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink { 50%{opacity:0.5} }
+
+  .feed-list { overflow:hidden; height:calc(240px - 42px); position:relative; }
+  .feed-scroll { animation: scrollUp 15s linear infinite; }
+  @keyframes scrollUp { 0%{transform:translateY(0)} 100%{transform:translateY(-50%)} }
+
+  .feed-item {
+    display:grid;
+    grid-template-columns:80px 100px 1fr 80px 70px;
+    gap:8px;
+    align-items:center;
+    padding:7px 16px;
+    border-bottom:1px solid rgba(0,229,255,0.05);
+    font-size:12px;
+    transition:background 0.2s;
+  }
+  .feed-item:hover { background:rgba(0,229,255,0.04); }
+  .feed-time { font-family:'Share Tech Mono'; font-size:10px; color:var(--muted); }
+  .feed-ip { font-family:'Share Tech Mono'; font-size:11px; color:var(--cyan); }
+  .feed-type { font-size:11px; }
+  .feed-country { font-size:11px; color:var(--muted); }
+  .severity {
+    padding:2px 8px;
+    border-radius:2px;
+    font-size:10px;
+    font-family:'Share Tech Mono';
+    text-align:center;
+    font-weight:600;
+  }
+  .sev-crit { background:rgba(255,23,68,0.15); border:1px solid var(--red); color:var(--red); }
+  .sev-high { background:rgba(255,109,0,0.15); border:1px solid var(--orange); color:var(--orange); }
+  .sev-med { background:rgba(255,214,0,0.12); border:1px solid var(--yellow); color:var(--yellow); }
+  .sev-low { background:rgba(0,230,118,0.1); border:1px solid var(--green); color:var(--green); }
+
+  /* ===== RIGHT SIDEBAR ===== */
+  .sidebar-right {
+    padding:20px 16px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+  }
+
+  /* Model confidence gauge */
+  .gauge-wrap { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .gauge-svg { width:160px; height:90px; }
+
+  /* Anomaly chart */
+  .chart-area { position:relative; height:100px; }
+  .chart-svg { width:100%; height:100%; }
+
+  /* Alert panel */
+  .alert-item {
+    background:var(--bg2);
+    border-left:3px solid;
+    border-radius:0 4px 4px 0;
+    padding:10px 12px;
+    margin-bottom:8px;
+    border-top:1px solid var(--border);
+    border-right:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+  }
+  .alert-item.crit { border-left-color:var(--red); }
+  .alert-item.high { border-left-color:var(--orange); }
+  .alert-item.med { border-left-color:var(--yellow); }
+
+  .alert-title { font-size:12px; font-weight:600; margin-bottom:3px; }
+  .alert-item.crit .alert-title { color:var(--red); }
+  .alert-item.high .alert-title { color:var(--orange); }
+  .alert-item.med .alert-title { color:var(--yellow); }
+  .alert-meta { font-size:10px; color:var(--muted); font-family:'Share Tech Mono'; }
+  .alert-shap { margin-top:6px; font-size:10px; color:var(--text); line-height:1.5; opacity:0.8; }
+
+  /* ===== BOTTOM STATUS BAR ===== */
+  .statusbar {
+    grid-column:1/-1;
+    border-top:1px solid var(--border);
+    padding:6px 20px;
+    display:flex;
+    align-items:center;
+    gap:24px;
+    background:rgba(2,12,20,0.9);
+    font-family:'Share Tech Mono';
+    font-size:10px;
+    color:var(--muted);
+    position:relative;
+    z-index:10;
+  }
+  .sb-item { display:flex; align-items:center; gap:6px; }
+  .sb-dot { width:5px;height:5px;border-radius:50%; }
+  .sb-dot.g { background:var(--green); box-shadow:0 0 6px var(--green); }
+  .sb-dot.r { background:var(--red); box-shadow:0 0 6px var(--red); }
+  .sb-dot.c { background:var(--cyan); }
+  .sb-val { color:var(--text); }
+
+  .scrollbar-hidden::-webkit-scrollbar { display:none; }
+
+  /* SHAP bar mini */
+  .shap-bar { display:flex; gap:4px; align-items:center; margin-top:4px; }
+  .shap-lbl { font-size:9px; color:var(--muted); width:80px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .shap-track { flex:1; height:3px; background:rgba(255,255,255,0.05); border-radius:2px; }
+  .shap-fill { height:100%; border-radius:2px; background:var(--cyan); }
+
+  /* Model metrics */
+  .metric-row {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:7px 0;
+    border-bottom:1px solid var(--border);
+    font-size:12px;
+  }
+  .metric-row:last-child { border-bottom:none; }
+  .metric-key { color:var(--muted); }
+  .metric-val { font-family:'Share Tech Mono'; }
+  .metric-val.g { color:var(--green); }
+  .metric-val.c { color:var(--cyan); }
+
+  /* Animated corner brackets */
+  .corner-box {
+    position:relative;
+    padding:14px;
+  }
+  .corner-box::before, .corner-box::after,
+  .corner-box .cb-br::before, .corner-box .cb-br::after {
+    content:'';
+    position:absolute;
+    width:10px;height:10px;
+    border-color:var(--cyan);
+    border-style:solid;
+    opacity:0.6;
+  }
+  .corner-box::before { top:0;left:0;border-width:1px 0 0 1px; }
+  .corner-box::after { top:0;right:0;border-width:1px 1px 0 0; }
+  .corner-box .cb-br::before { bottom:0;left:0;border-width:0 0 1px 1px; }
+  .corner-box .cb-br::after { bottom:0;right:0;border-width:0 1px 1px 0; }
+
+  /* Typing cursor animation */
+  .typing::after {
+    content:'_';
+    animation:blink 0.8s step-end infinite;
+    color:var(--cyan);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon"></div>
+    <div>
+      <div class="logo-text">NeuroSent</div>
+      <div class="logo-sub">CYBER THREAT INTELLIGENCE</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-status"><div class="pulse-dot"></div>SYSTEMS ONLINE</div>
+    <div class="threat-level">THREAT LEVEL: HIGH</div>
+    <div class="nav-time" id="clock">--:--:-- UTC</div>
+  </div>
+</nav>
+
+<main>
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar-left scrollbar-hidden">
+
+    <div>
+      <div class="section-label">Live Metrics</div>
+      <div class="stat-grid">
+        <div class="stat-card red">
+          <div class="stat-val" id="stat-threats">2,847</div>
+          <div class="stat-lbl">THREATS TODAY</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-val" id="stat-active">143</div>
+          <div class="stat-lbl">ACTIVE ALERTS</div>
+        </div>
+        <div class="stat-card cyan">
+          <div class="stat-val">98.3%</div>
+          <div class="stat-lbl">DETECTION RATE</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-val">0.4%</div>
+          <div class="stat-lbl">FALSE POSITIVE</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Attack Classification</div>
+      <div class="attack-list">
+        <div class="attack-item">
+          <div class="attack-header"><span>DDoS / Flood</span><span class="attack-pct">34%</span></div>
+          <div class="bar-track"><div class="bar-fill r" style="width:34%"></div></div>
+        </div>
+        <div class="attack-item">
+          <div class="attack-header"><span>Port Scan</span><span class="attack-pct">22%</span></div>
+          <div class="bar-track"><div class="bar-fill o" style="width:22%"></div></div>
+        </div>
+        <div class="attack-item">
+          <div class="attack-header"><span>Brute Force</span><span class="attack-pct">18%</span></div>
+          <div class="bar-track"><div class="bar-fill c" style="width:18%"></div></div>
+        </div>
+        <div class="attack-item">
+          <div class="attack-header"><span>SQL Injection</span><span class="attack-pct">14%</span></div>
+          <div class="bar-track"><div class="bar-fill y" style="width:14%"></div></div>
+        </div>
+        <div class="attack-item">
+          <div class="attack-header"><span>Malware C2</span><span class="attack-pct">8%</span></div>
+          <div class="bar-track"><div class="bar-fill g" style="width:8%"></div></div>
+        </div>
+        <div class="attack-item">
+          <div class="attack-header"><span>Zero-Day</span><span class="attack-pct">4%</span></div>
+          <div class="bar-track"><div class="bar-fill r" style="width:4%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Top Source Countries</div>
+      <div class="attack-list">
+        <div class="attack-item">
+          <div class="attack-header"><span>🇨🇳 China</span><span class="attack-pct">28%</span></div>
+          <div class="bar-track"><div class="bar-fill r" style="width:28%"></div></div>
+        </div>
+        <div class="attack-item">
+          <div class="attack-header"><span>🇷🇺 Russia</span><span class="attack-pct">21%</span></div>
+          <div class="bar-track"><div class="bar-fill o" style="width:21%"></div></div>
+        </div>
+        <div class="attack-item">
+          <div class="attack-header"><span>🇺🇸 United States</span><span class="attack-pct">11%</span></div>
+          <div class="bar-track"><div class="bar-fill c" style="width:11%"></div></div>
+        </div>
+        <div class="attack-item">
+          <div class="attack-header"><span>🇧🇷 Brazil</span><span class="attack-pct">9%</span></div>
+          <div class="bar-track"><div class="bar-fill y" style="width:9%"></div></div>
+        </div>
+        <div class="attack-item">
+          <div class="attack-header"><span>🇰🇵 North Korea</span><span class="attack-pct">7%</span></div>
+          <div class="bar-track"><div class="bar-fill r" style="width:7%"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CENTER PANEL -->
+  <div class="center-panel">
+
+    <!-- World map -->
+    <div class="map-area" id="mapArea">
+      <div class="map-overlay-text">GLOBAL THREAT MAP // LIVE</div>
+
+      <!-- Attack arc SVG -->
+      <svg class="attack-arcs" id="arcSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+
+      <!-- Ping dots -->
+      <div class="map-ping red" style="left:68%;top:28%">
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="map-ping red" style="left:58%;top:22%">
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="map-ping orange" style="left:20%;top:35%">
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="map-ping cyan" style="left:48%;top:30%">
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="map-ping red" style="left:76%;top:65%">
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="map-ping orange" style="left:33%;top:58%">
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="map-ping cyan" style="left:55%;top:45%">
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="ring" style="width:6px;height:6px"></div>
+        <div class="dot"></div>
+      </div>
+
+      <!-- Map label overlays -->
+      <div class="map-label" style="left:63%;top:23%;color:#ff174488">BEIJING</div>
+      <div class="map-label" style="left:55%;top:18%;color:#ff6d0066">MOSCOW</div>
+      <div class="map-label" style="left:18%;top:31%;color:#ff6d0066">NEW YORK</div>
+      <div class="map-label" style="left:46%;top:26%;color:#00e5ff55">LONDON</div>
+      <div class="map-label" style="left:73%;top:61%;color:#ff174466">SYDNEY</div>
+
+      <!-- World map SVG - dot grid representation -->
+      <svg class="map-svg" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Simplified world continents as paths -->
+        <!-- North America -->
+        <path d="M80,80 L160,70 L200,90 L220,140 L200,180 L160,200 L120,210 L80,190 L60,150 L70,110 Z" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
+        <!-- South America -->
+        <path d="M160,220 L200,210 L220,250 L210,310 L180,340 L150,320 L140,280 L150,240 Z" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
+        <!-- Europe -->
+        <path d="M340,60 L400,55 L420,80 L400,110 L360,120 L330,100 L320,75 Z" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
+        <!-- Africa -->
+        <path d="M340,130 L400,120 L430,160 L420,230 L380,270 L340,260 L320,220 L310,170 L320,140 Z" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
+        <!-- Asia -->
+        <path d="M420,50 L560,40 L620,70 L640,110 L600,140 L540,150 L480,130 L440,100 L420,70 Z" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
+        <!-- Australia -->
+        <path d="M580,240 L650,235 L670,270 L650,300 L600,305 L575,280 L572,255 Z" fill="none" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
+        <!-- Grid dots -->
+        <pattern id="dots" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse">
+          <circle cx="6" cy="6" r="0.6" fill="#00e5ff" opacity="0.3"/>
+        </pattern>
+        <rect width="800" height="400" fill="url(#dots)"/>
+      </svg>
+    </div>
+
+    <!-- Threat Feed -->
+    <div class="threat-feed">
+      <div class="feed-header">
+        <div class="feed-title">// LIVE THREAT FEED</div>
+        <div class="feed-badge">⬤ LIVE</div>
+      </div>
+      <div class="feed-list">
+        <div class="feed-scroll" id="feedScroll">
+          <!-- Items duplicated for infinite scroll illusion -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar-right scrollbar-hidden">
+
+    <div>
+      <div class="section-label">Model Performance</div>
+      <div class="corner-box"><div class="cb-br">
+        <!-- Gauge -->
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" viewBox="0 0 160 90">
+            <defs>
+              <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ff1744"/>
+                <stop offset="50%" stop-color="#ffd600"/>
+                <stop offset="100%" stop-color="#00e676"/>
+              </linearGradient>
+            </defs>
+            <!-- Track -->
+            <path d="M15,85 A65,65 0 0,1 145,85" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="10" stroke-linecap="round"/>
+            <!-- Fill -->
+            <path d="M15,85 A65,65 0 0,1 145,85" fill="none" stroke="url(#gaugeGrad)" stroke-width="10" stroke-linecap="round" stroke-dasharray="204" stroke-dashoffset="20" opacity="0.9"/>
+            <!-- Needle -->
+            <line x1="80" y1="85" x2="28" y2="32" stroke="#00e5ff" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="80" cy="85" r="5" fill="#00e5ff" opacity="0.8"/>
+            <text x="80" y="68" text-anchor="middle" fill="#00e5ff" font-size="18" font-family="Share Tech Mono" font-weight="bold">98.3%</text>
+            <text x="80" y="80" text-anchor="middle" fill="#4a7a94" font-size="8" font-family="Share Tech Mono">ACCURACY</text>
+          </svg>
+        </div>
+        <div>
+          <div class="metric-row"><span class="metric-key">Precision</span><span class="metric-val g">97.8%</span></div>
+          <div class="metric-row"><span class="metric-key">Recall</span><span class="metric-val g">98.9%</span></div>
+          <div class="metric-row"><span class="metric-key">F1-Score</span><span class="metric-val c">98.3%</span></div>
+          <div class="metric-row"><span class="metric-key">ROC-AUC</span><span class="metric-val c">0.997</span></div>
+          <div class="metric-row"><span class="metric-key">Latency</span><span class="metric-val g">4ms</span></div>
+        </div>
+      </div></div>
+    </div>
+
+    <div>
+      <div class="section-label">Anomaly Score (24h)</div>
+      <div class="chart-area">
+        <svg class="chart-svg" viewBox="0 0 268 100" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#00e5ff" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <!-- Grid lines -->
+          <line x1="0" y1="25" x2="268" y2="25" stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+          <line x1="0" y1="50" x2="268" y2="50" stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+          <line x1="0" y1="75" x2="268" y2="75" stroke="rgba(0,229,255,0.08)" stroke-width="1"/>
+          <!-- Area -->
+          <path d="M0,80 L15,70 L30,72 L45,55 L60,60 L75,45 L90,50 L105,30 L120,35 L135,20 L150,25 L165,15 L180,40 L195,8 L210,20 L225,30 L240,25 L255,35 L268,30 L268,100 L0,100 Z" fill="url(#areaGrad)"/>
+          <!-- Line -->
+          <path d="M0,80 L15,70 L30,72 L45,55 L60,60 L75,45 L90,50 L105,30 L120,35 L135,20 L150,25 L165,15 L180,40 L195,8 L210,20 L225,30 L240,25 L255,35 L268,30" fill="none" stroke="#00e5ff" stroke-width="1.5"/>
+          <!-- Spike highlight -->
+          <circle cx="195" cy="8" r="3" fill="#ff1744" opacity="0.9"/>
+          <line x1="195" y1="8" x2="195" y2="100" stroke="#ff1744" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.4"/>
+          <text x="198" y="16" fill="#ff1744" font-size="7" font-family="Share Tech Mono">SPIKE</text>
+        </svg>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Active Alerts + SHAP</div>
+
+      <div class="alert-item crit">
+        <div class="alert-title">⚠ DDoS Attack Detected</div>
+        <div class="alert-meta">192.168.1.42 → 10.0.0.5 // 02:14:33</div>
+        <div class="alert-shap">Why flagged:</div>
+        <div class="shap-bar"><div class="shap-lbl">pkt_rate</div><div class="shap-track"><div class="shap-fill" style="width:92%"></div></div><span style="font-size:9px;color:#00e5ff;font-family:Share Tech Mono">0.92</span></div>
+        <div class="shap-bar"><div class="shap-lbl">dst_bytes</div><div class="shap-track"><div class="shap-fill" style="width:74%"></div></div><span style="font-size:9px;color:#00e5ff;font-family:Share Tech Mono">0.74</span></div>
+        <div class="shap-bar"><div class="shap-lbl">duration</div><div class="shap-track"><div class="shap-fill" style="width:45%"></div></div><span style="font-size:9px;color:#00e5ff;font-family:Share Tech Mono">0.45</span></div>
+      </div>
+
+      <div class="alert-item high">
+        <div class="alert-title">⚠ Brute Force Login</div>
+        <div class="alert-meta">45.33.32.156 → SSH:22 // 02:11:07</div>
+        <div class="alert-shap">Why flagged:</div>
+        <div class="shap-bar"><div class="shap-lbl">failed_logins</div><div class="shap-track"><div class="shap-fill" style="width:88%"></div></div><span style="font-size:9px;color:#00e5ff;font-family:Share Tech Mono">0.88</span></div>
+        <div class="shap-bar"><div class="shap-lbl">src_entropy</div><div class="shap-track"><div class="shap-fill" style="width:60%"></div></div><span style="font-size:9px;color:#00e5ff;font-family:Share Tech Mono">0.60</span></div>
+      </div>
+
+      <div class="alert-item med">
+        <div class="alert-title">◆ Port Scan Activity</div>
+        <div class="alert-meta">103.21.244.0/24 // 02:09:52</div>
+        <div class="alert-shap">Why flagged:</div>
+        <div class="shap-bar"><div class="shap-lbl">unique_ports</div><div class="shap-track"><div class="shap-fill" style="width:79%"></div></div><span style="font-size:9px;color:#00e5ff;font-family:Share Tech Mono">0.79</span></div>
+        <div class="shap-bar"><div class="shap-lbl">scan_rate</div><div class="shap-track"><div class="shap-fill" style="width:55%"></div></div><span style="font-size:9px;color:#00e5ff;font-family:Share Tech Mono">0.55</span></div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- BOTTOM STATUS BAR -->
+  <div class="statusbar">
+    <div class="sb-item"><div class="sb-dot g"></div><span>ML Engine: <span class="sb-val">ONLINE</span></span></div>
+    <div class="sb-item"><div class="sb-dot g"></div><span>Kafka Stream: <span class="sb-val">ACTIVE</span></span></div>
+    <div class="sb-item"><div class="sb-dot c"></div><span>Isolation Forest: <span class="sb-val">v2.4.1</span></span></div>
+    <div class="sb-item"><div class="sb-dot c"></div><span>XGBoost Classifier: <span class="sb-val">v3.1.0</span></span></div>
+    <div class="sb-item"><div class="sb-dot r"></div><span>Active Incidents: <span class="sb-val" id="sb-incidents">143</span></span></div>
+    <div class="sb-item" style="margin-left:auto"><span>Events/sec: <span class="sb-val" id="sb-eps">4,821</span></span></div>
+    <div class="sb-item"><span>Uptime: <span class="sb-val">14d 06h 33m</span></span></div>
+  </div>
+
+</main>
+
+<script>
+// Clock
+function updateClock() {
+  const now = new Date();
+  const t = now.toUTCString().split(' ')[4];
+  document.getElementById('clock').textContent = t + ' UTC';
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Feed data
+const feedData = [
+  { time:'02:14:33', ip:'192.168.1.42', type:'DDoS Flood', country:'China', sev:'CRITICAL', cls:'sev-crit' },
+  { time:'02:14:28', ip:'45.33.32.156', type:'Brute Force', country:'Russia', sev:'HIGH', cls:'sev-high' },
+  { time:'02:14:21', ip:'103.21.244.0', type:'Port Scan', country:'USA', sev:'MEDIUM', cls:'sev-med' },
+  { time:'02:14:15', ip:'185.220.101.7', type:'SQL Injection', country:'Brazil', sev:'HIGH', cls:'sev-high' },
+  { time:'02:14:09', ip:'91.108.4.0', type:'Malware C2', country:'N. Korea', sev:'CRITICAL', cls:'sev-crit' },
+  { time:'02:14:02', ip:'5.188.206.14', type:'Zero-Day', country:'Iran', sev:'CRITICAL', cls:'sev-crit' },
+  { time:'02:13:55', ip:'198.23.249.100', type:'Port Scan', country:'Germany', sev:'LOW', cls:'sev-low' },
+  { time:'02:13:48', ip:'77.88.8.8', type:'Brute Force', country:'Russia', sev:'HIGH', cls:'sev-high' },
+  { time:'02:13:41', ip:'218.92.0.0', type:'DDoS Flood', country:'China', sev:'CRITICAL', cls:'sev-crit' },
+  { time:'02:13:33', ip:'162.158.0.0', type:'Bot Traffic', country:'USA', sev:'MEDIUM', cls:'sev-med' },
+];
+
+function buildFeed() {
+  const scroll = document.getElementById('feedScroll');
+  const all = [...feedData, ...feedData]; // duplicate for loop
+  scroll.innerHTML = all.map(d => `
+    <div class="feed-item">
+      <span class="feed-time">${d.time}</span>
+      <span class="feed-ip">${d.ip}</span>
+      <span class="feed-type">${d.type}</span>
+      <span class="feed-country">${d.country}</span>
+      <span class="severity ${d.cls}">${d.sev}</span>
+    </div>
+  `).join('');
+}
+buildFeed();
+
+// Animate counters
+function animateCounter(el, target, duration=2000) {
+  let start = 0;
+  const step = target / (duration / 16);
+  const timer = setInterval(() => {
+    start += step;
+    if (start >= target) { el.textContent = target.toLocaleString(); clearInterval(timer); return; }
+    el.textContent = Math.floor(start).toLocaleString();
+  }, 16);
+}
+animateCounter(document.getElementById('stat-threats'), 2847);
+animateCounter(document.getElementById('stat-active'), 143);
+
+// Live updates
+setInterval(() => {
+  const t = document.getElementById('stat-threats');
+  const curr = parseInt(t.textContent.replace(/,/g,''));
+  t.textContent = (curr + Math.floor(Math.random()*3)).toLocaleString();
+  document.getElementById('sb-eps').textContent = (4000 + Math.floor(Math.random()*2000)).toLocaleString();
+}, 2000);
+
+// Attack arcs on map
+function drawArcs() {
+  const svg = document.getElementById('arcSvg');
+  const map = document.getElementById('mapArea');
+  const w = map.offsetWidth, h = map.offsetHeight;
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+
+  const sources = [
+    {x:0.68*w, y:0.28*h, color:'#ff1744'},
+    {x:0.58*w, y:0.22*h, color:'#ff1744'},
+    {x:0.33*w, y:0.58*h, color:'#ff6d00'},
+    {x:0.76*w, y:0.65*h, color:'#ff1744'},
+  ];
+  const target = {x:0.48*w, y:0.30*h};
+
+  svg.innerHTML = sources.map((s, i) => {
+    const cx = (s.x + target.x) / 2;
+    const cy = Math.min(s.y, target.y) - 60;
+    return `<path d="M${s.x},${s.y} Q${cx},${cy} ${target.x},${target.y}"
+      fill="none" stroke="${s.color}" stroke-width="1" opacity="0.5"
+      stroke-dasharray="6 4">
+      <animate attributeName="stroke-dashoffset" from="0" to="-30" dur="${1.5+i*0.4}s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="${s.x}" cy="${s.y}" r="2" fill="${s.color}" opacity="0.8"/>`;
+  }).join('');
+}
+
+setTimeout(drawArcs, 100);
+window.addEventListener('resize', drawArcs);
+</script>
+</body>
+</html>
