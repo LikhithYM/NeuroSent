@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 507" class="map-svg">
+  <defs>
+    <pattern id="dots" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="5" cy="5" r="0.7" fill="#00e5ff" opacity="0.22"/>
+    </pattern>
+    <filter id="glow-path">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1000" height="507" fill="url(#dots)"/>
+
+  <!-- Latitude grid lines -->
+  <g stroke="rgba(0,229,255,0.06)" stroke-width="0.5" fill="none">
+    <ellipse cx="500" cy="253" rx="490" ry="245"/>
+    <line x1="10" y1="253" x2="990" y2="253"/>
+    <path d="M90,170 Q500,155 910,170"/>
+    <path d="M90,336 Q500,351 910,336"/>
+    <path d="M200,100 Q500,88 800,100"/>
+    <path d="M200,406 Q500,418 800,406"/>
+    <line x1="500" y1="8" x2="500" y2="498" stroke-dasharray="3 4"/>
+    <line x1="255" y1="15" x2="195" y2="492" stroke-dasharray="3 4"/>
+    <line x1="745" y1="15" x2="805" y2="492" stroke-dasharray="3 4"/>
+    <line x1="378" y1="10" x2="348" y2="497" stroke-dasharray="3 4"/>
+    <line x1="622" y1="10" x2="652" y2="497" stroke-dasharray="3 4"/>
+  </g>
+
+  <!-- NORTH AMERICA -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.9" opacity="0.9"
+    d="M130,70 L140,65 L155,58 L170,55 L185,58 L195,55 L205,48 L215,44
+    L228,42 L240,45 L248,42 L260,38 L272,35 L282,38 L290,42 L295,48
+    L290,55 L285,62 L278,70 L272,78 L268,85 L265,92 L270,98 L278,95
+    L285,90 L292,88 L298,92 L302,100 L295,108 L288,115 L282,108
+    L275,105 L268,108 L262,115 L258,122 L255,130 L252,138 L248,145
+    L242,150 L235,155 L228,162 L222,170 L218,178 L215,186 L212,195
+    L210,205 L208,212 L202,218 L195,222 L188,228 L182,235 L178,242
+    L175,248 L178,252 L185,248 L192,245 L198,248 L202,255 L198,262
+    L190,265 L182,262 L175,258 L168,255 L160,252 L155,245 L150,238
+    L148,230 L145,222 L140,215 L135,210 L130,205 L125,198 L120,190
+    L118,182 L115,175 L112,168 L108,160 L105,152 L102,145 L100,138
+    L98,130 L97,122 L100,115 L105,108 L110,100 L115,92 L120,85 L125,78 Z"/>
+
+  <!-- Greenland -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="0.8" opacity="0.75"
+    d="M310,28 L325,20 L342,16 L358,18 L372,22 L382,30 L385,42
+    L378,52 L368,58 L355,62 L340,60 L328,55 L318,48 L312,38 Z"/>
+
+  <!-- Central America & Caribbean -->
+  <path fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="0.7" opacity="0.7"
+    d="M178,242 L185,238 L192,235 L198,238 L205,242 L210,248
+    L215,255 L218,262 L215,268 L208,272 L200,270 L192,265
+    L185,260 L180,252 Z"/>
+
+  <!-- Cuba -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.6"
+    d="M195,218 L210,215 L225,218 L228,224 L218,228 L205,228 L195,225 Z"/>
+
+  <!-- SOUTH AMERICA -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.9" opacity="0.9"
+    d="M220,270 L228,265 L238,260 L250,258 L262,255 L275,258
+    L288,262 L298,268 L305,275 L310,285 L315,295 L318,305
+    L320,318 L318,330 L315,342 L310,355 L305,365 L298,375
+    L290,385 L282,392 L275,398 L268,405 L260,412 L255,418
+    L248,422 L242,418 L238,410 L235,400 L232,390 L228,380
+    L225,368 L222,355 L220,342 L218,330 L218,318 L220,305
+    L222,295 L222,285 Z"/>
+
+  <!-- EUROPE -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.9" opacity="0.9"
+    d="M440,82 L448,78 L458,75 L468,72 L478,68 L488,65 L498,62
+    L508,60 L518,62 L528,58 L535,52 L542,48 L550,50 L558,55
+    L565,52 L572,48 L578,52 L575,60 L570,68 L565,75 L558,82
+    L552,88 L545,92 L538,98 L530,105 L525,112 L520,118 L515,125
+    L508,130 L500,135 L492,140 L484,145 L475,148 L468,145
+    L460,140 L452,135 L445,128 L440,120 L438,112 L436,105
+    L435,98 L436,90 Z"/>
+
+  <!-- UK & Ireland -->
+  <path fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="0.7" opacity="0.75"
+    d="M432,78 L440,72 L448,70 L455,74 L456,82 L452,90 L445,95
+    L438,92 L432,85 Z"/>
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.65"
+    d="M425,82 L430,78 L435,82 L434,90 L428,92 Z"/>
+
+  <!-- Scandinavia -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.8" opacity="0.85"
+    d="M488,38 L498,32 L510,28 L522,30 L530,38 L528,48 L520,58
+    L510,62 L500,60 L492,52 L488,45 Z"/>
+
+  <!-- Iceland -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.6"
+    d="M400,42 L410,38 L420,42 L418,50 L408,52 L400,48 Z"/>
+
+  <!-- Iberian Peninsula -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.8" opacity="0.85"
+    d="M428,112 L440,108 L452,112 L458,122 L455,135 L448,142
+    L438,145 L428,140 L424,130 L425,120 Z"/>
+
+  <!-- Italy -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.65"
+    d="M490,120 L498,115 L505,120 L508,132 L505,142 L498,148
+    L490,142 L488,130 Z"/>
+
+  <!-- AFRICA -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.9" opacity="0.9"
+    d="M438,155 L452,150 L468,148 L485,148 L502,148 L518,150
+    L535,155 L548,160 L558,168 L565,178 L572,190 L575,202
+    L578,215 L578,228 L575,242 L572,255 L568,268 L562,280
+    L555,292 L545,302 L535,310 L522,318 L510,322 L498,322
+    L485,318 L472,312 L462,302 L452,290 L445,278 L440,265
+    L436,250 L434,235 L434,220 L435,205 L438,190 L440,178
+    L435,168 Z"/>
+
+  <!-- Madagascar -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="0.7" opacity="0.72"
+    d="M578,268 L585,258 L592,255 L598,262 L598,278 L592,290
+    L585,292 L578,285 Z"/>
+
+  <!-- ASIA -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.9" opacity="0.9"
+    d="M558,55 L572,48 L588,42 L605,38 L622,35 L640,32 L658,32
+    L678,35 L698,40 L715,48 L730,58 L742,68 L752,80 L760,92
+    L765,105 L762,118 L755,130 L745,142 L735,152 L722,160
+    L710,165 L698,168 L685,172 L672,178 L660,182 L648,178
+    L638,172 L625,168 L615,172 L608,180 L602,188 L598,198
+    L595,210 L592,222 L588,232 L580,240 L575,248 L572,255
+    L568,248 L562,238 L555,225 L548,215 L542,208 L538,200
+    L535,192 L532,182 L530,172 L528,162 L530,150 L535,140
+    L540,128 L545,118 L548,108 L550,98 L548,88 L542,78
+    L538,68 L542,60 Z"/>
+
+  <!-- Arabian Peninsula -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.8" opacity="0.85"
+    d="M548,160 L560,155 L575,152 L588,155 L598,162 L605,172
+    L608,185 L605,198 L598,210 L588,218 L575,222 L565,218
+    L555,208 L548,195 L545,180 Z"/>
+
+  <!-- Indian Subcontinent -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.8" opacity="0.85"
+    d="M608,168 L622,162 L638,160 L652,165 L658,178 L655,195
+    L648,210 L638,225 L625,232 L612,228 L602,218 L598,205
+    L598,190 L602,178 Z"/>
+
+  <!-- Sri Lanka -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.5" opacity="0.6"
+    d="M635,238 L642,232 L648,236 L646,248 L638,250 Z"/>
+
+  <!-- Southeast Asia mainland -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="0.8" opacity="0.82"
+    d="M672,165 L685,158 L698,162 L708,172 L712,185 L708,198
+    L700,208 L690,212 L680,205 L675,192 L672,178 Z"/>
+
+  <!-- Malay Peninsula -->
+  <path fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="0.6" opacity="0.7"
+    d="M700,208 L708,202 L715,208 L715,225 L708,235 L700,228 L698,218 Z"/>
+
+  <!-- Japan -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="0.7" opacity="0.75"
+    d="M762,105 L770,98 L778,102 L780,115 L775,128 L768,135 L760,130 L758,118 Z"/>
+
+  <!-- Korean Peninsula -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.65"
+    d="M738,115 L745,108 L752,112 L752,125 L745,132 L738,128 Z"/>
+
+  <!-- Kamchatka -->
+  <path fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="0.7" opacity="0.72"
+    d="M772,82 L782,75 L790,80 L792,95 L785,108 L775,112 L768,105 L770,92 Z"/>
+
+  <!-- Sumatra -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.6"
+    d="M698,232 L708,225 L718,228 L722,242 L715,252 L705,250 L698,242 Z"/>
+
+  <!-- Borneo -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.6"
+    d="M725,222 L738,215 L750,218 L755,232 L750,245 L738,250 L725,245 L722,232 Z"/>
+
+  <!-- Philippines -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.5" opacity="0.6"
+    d="M752,178 L758,172 L765,175 L768,188 L762,198 L755,195 L750,188 Z"/>
+
+  <!-- Papua New Guinea -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.6"
+    d="M790,252 L802,245 L815,248 L820,260 L812,270 L800,272 L790,265 Z"/>
+
+  <!-- AUSTRALIA -->
+  <path filter="url(#glow-path)" fill="rgba(0,229,255,0.09)" stroke="#00e5ff" stroke-width="0.9" opacity="0.9"
+    d="M748,298 L762,288 L778,282 L795,278 L812,278 L828,282
+    L842,290 L852,302 L858,318 L856,335 L850,348 L840,358
+    L828,365 L812,370 L795,372 L778,370 L762,365 L748,355
+    L738,342 L732,328 L732,312 L736,302 Z"/>
+
+  <!-- Tasmania -->
+  <path fill="rgba(0,229,255,0.07)" stroke="#00e5ff" stroke-width="0.7" opacity="0.7"
+    d="M812,378 L822,372 L832,378 L830,390 L820,395 L810,390 Z"/>
+
+  <!-- New Zealand North -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.65"
+    d="M878,328 L886,320 L894,325 L892,338 L884,345 L876,340 Z"/>
+
+  <!-- New Zealand South -->
+  <path fill="rgba(0,229,255,0.06)" stroke="#00e5ff" stroke-width="0.6" opacity="0.62"
+    d="M872,348 L882,342 L892,348 L890,365 L878,372 L868,362 Z"/>
+
+  <!-- ANTARCTICA -->
+  <path fill="rgba(0,229,255,0.05)" stroke="#00e5ff" stroke-width="0.6" opacity="0.45"
+    d="M150,450 Q300,438 500,435 Q700,438 850,450 Q920,460 960,472
+    L960,498 L40,498 L40,472 Q80,460 150,450 Z"/>
+
+  <!-- Robinson outer boundary -->
+  <ellipse cx="500" cy="253" rx="490" ry="245" fill="none" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+</svg>
