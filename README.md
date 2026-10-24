@@ -1,3 +1,6 @@
+<img width="1535" height="750" alt="image" src="https://github.com/user-attachments/assets/41b99808-b38b-457d-bb7e-7a408574d4bd" />
+
+
 # NeuroSent — AI-Powered Cyber Threat Intelligence
 
 > Real-time cyber threat detection using Machine Learning (Isolation Forest, Random Forest, KMeans) with a live operational dashboard.
